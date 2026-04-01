@@ -1,0 +1,32 @@
+{
+    admin off
+}
+
+# Mac / local dev: point at this repo root (folder that contains app/ and data/).
+#   cd /path/to/media-ingest && export MEDIA_INGEST_ROOT="$PWD"
+#   caddy run --config Caddyfile
+#
+# Production Pi still using /srv/media-ingest with the same data/ layout as defaults:
+#   export MEDIA_INGEST_ROOT=/srv/media-ingest
+#
+# If you keep media at /srv/media-ingest/media (no data/ prefix), either symlink
+#   data/media -> ../media or set MEDIA_INGEST_ROOT so {$MEDIA_INGEST_ROOT}/data/media resolves.
+
+:8081 {
+    handle /media/* {
+        root * {$MEDIA_INGEST_ROOT}/data/media
+        file_server
+    }
+
+    handle /thumbs/* {
+        root * {$MEDIA_INGEST_ROOT}/data/meta/thumbs
+        file_server
+    }
+
+    handle /subs/* {
+        root * {$MEDIA_INGEST_ROOT}/data/meta/subs
+        file_server
+    }
+
+    reverse_proxy localhost:8080
+}

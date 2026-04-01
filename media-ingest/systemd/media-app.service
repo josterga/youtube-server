@@ -1,0 +1,15 @@
+[Unit]
+Description=Media Ingest App
+After=network.target
+
+[Service]
+Type=simple
+User=media
+WorkingDirectory=/srv/media-ingest
+EnvironmentFile=/srv/media-ingest/.env
+ExecStart=/srv/media-ingest/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8080
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
