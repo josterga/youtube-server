@@ -11,6 +11,9 @@ fi
 
 export MEDIA_INGEST_ROOT="${MEDIA_INGEST_ROOT:-$PWD}"
 
+# Ensure required directories exist
+mkdir -p data/media/audio data/media/video data/meta/thumbs data/meta/subs data/tmp data/db
+
 python -m app.worker &
 WORKER_PID=$!
 
