@@ -13,17 +13,17 @@
 #   data/media -> ../media or set MEDIA_INGEST_ROOT so {$MEDIA_INGEST_ROOT}/data/media resolves.
 
 :8081 {
-    handle_path /media/* {
+    handle /media/* {
         root * {$MEDIA_INGEST_ROOT}/data/media
         file_server
     }
 
-    handle_path /thumbs/* {
+    handle /thumbs/* {
         root * {$MEDIA_INGEST_ROOT}/data/meta/thumbs
         file_server
     }
 
-    handle_path /subs/* {
+    handle /subs/* {
         root * {$MEDIA_INGEST_ROOT}/data/meta/subs
         file_server
     }

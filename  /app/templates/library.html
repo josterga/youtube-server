@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Library — Media Ingest{% endblock %}
+{% block body %}
+  <div class="card stack" style="margin-bottom:1rem;">
+    <h2 style="margin:0;font-size:1.05rem;">Library</h2>
+    <form method="get" action="/library" class="stack">
+      <label for="q">Search title or uploader</label>
+      <input type="search" name="q" id="q" value="{{ q }}" placeholder="Search…" autocomplete="off">
+      <fieldset class="options" aria-label="Media kind">
+        <label><input type="radio" name="kind" value="" {% if type_filter == 'all' %}checked{% endif %}> All</label>
+        <label><input type="radio" name="kind" value="audio" {% if type_filter == 'audio' %}checked{% endif %}> Audio</label>
+        <label><input type="radio" name="kind" value="video" {% if type_filter == 'video' %}checked{% endif %}> Video</label>
+      </fieldset>
+      <button type="submit" class="btn secondary">Apply</button>
+    </form>
+    <p style="margin:0;color:var(--muted);font-size:.9rem;">{{ total }} item(s).</p>
+  </div>
+  {% if not items %}
+  <p class="card" style="color:var(--muted);">No media yet. Submit a URL from the home page.</p>
+  {% else %}
+  <div class="grid lib">
+    {% for it in items %}
+    <a href="/item/{{ it.id }}" class="card lib-card" style="text-decoration:none;color:inherit;">
+      {% if it.thumbnail_path %}
+      <img src="/thumbs/{{ it.thumbnail_path.split('/')[-1] }}" alt="" loading="lazy" width="640" height="360">
+      {% else %}
+      <div style="aspect-ratio:16/9;background:var(--bg);border-radius:8px;"></div>
+      {% endif %}
+      <strong style="font-size:1rem;line-height:1.25;">{{ it.title }}</strong>
+      <div class="meta">
+        {% if it.uploader %}{{ it.uploader }} · {% endif %}
+        {{ it.duration_sec | duration_fmt }} · {{ it.added_at }}
+      </div>
+      <div><span class="pill badge {{ it.media_type }}" style="background:var(--accent);">{{ it.media_type }}</span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% if pages > 1 %}
+  <nav style="margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+    {% if page > 1 %}
+    <a class="btn secondary" style="min-height:40px;padding:.45rem .75rem;" href="/library?page={{ page - 1 }}&q={{ q | urlencode }}{% if type_filter != 'all' %}&kind={{ type_filter }}{% endif %}">Previous</a>
+    {% endif %}
+    <span style="color:var(--muted);font-size:.9rem;">Page {{ page }} / {{ pages }}</span>
+    {% if page < pages %}
+    <a class="btn secondary" style="min-height:40px;padding:.45rem .75rem;" href="/library?page={{ page + 1 }}&q={{ q | urlencode }}{% if type_filter != 'all' %}&kind={{ type_filter }}{% endif %}">Next</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+  {% endif %}
+{% endblock %}
