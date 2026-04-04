@@ -1,0 +1,16 @@
+[Unit]
+Description=Media Ingest (app + worker + Caddy)
+After=network.target tailscaled.service
+Wants=tailscaled.service
+
+[Service]
+Type=simple
+User=parcl0
+WorkingDirectory=/home/parcl0/Documents/youtube-server/media-ingest
+ExecStart=/home/parcl0/Documents/youtube-server/media-ingest/run.sh
+Restart=always
+RestartSec=5
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
