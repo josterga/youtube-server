@@ -99,3 +99,7 @@ caddy run --config Caddyfile
 rsync -av --exclude='.venv' --exclude='data' \
     /Users/parcl0/Documents/parcl0/youtube-server/media-ingest/ \
     parcl0@10.42.0.214:/home/parcl0/Documents/youtube-server/media-ingest
+
+## Restart - I think
+sudo fuser -k 8080/tcp; sudo systemctl restart media-ingest;  
+  sleep 2; systemctl status media-ingest --no-pager -n 5
