@@ -10,7 +10,6 @@ WorkingDirectory=/home/parcl0/Documents/youtube-server/media-ingest
 ExecStart=/home/parcl0/Documents/youtube-server/media-ingest/run.sh
 Restart=always
 RestartSec=5
-KillMode=process
 
 [Install]
 WantedBy=multi-user.target

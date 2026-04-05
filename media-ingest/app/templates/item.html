@@ -33,4 +33,38 @@
     </div>
     <p style="margin:0;font-size:.85rem;color:var(--muted);">Playback is served from this app on <code>/media</code>; on a Pi you can use Caddy on <code>:8081</code> instead.</p>
   </article>
+
+  <script>
+  (function () {
+    if (!('mediaSession' in navigator)) return;
+
+    var media = document.querySelector('audio, video');
+    if (!media) return;
+
+    var artworkList = [];
+    {% if thumb_url %}
+    artworkList = [{ src: {{ thumb_url | tojson }}, sizes: '512x512', type: 'image/jpeg' }];
+    {% endif %}
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: {{ item.title | tojson }},
+      artist: {{ (item.uploader or '') | tojson }},
+      artwork: artworkList
+    });
+
+    media.addEventListener('play',  function () { navigator.mediaSession.playbackState = 'playing'; });
+    media.addEventListener('pause', function () { navigator.mediaSession.playbackState = 'paused';  });
+
+    navigator.mediaSession.setActionHandler('play',  function () { media.play(); });
+    navigator.mediaSession.setActionHandler('pause', function () { media.pause(); });
+    navigator.mediaSession.setActionHandler('seekbackward', function (evt) {
+      var step = (evt && evt.seekOffset) ? evt.seekOffset : 10;
+      media.currentTime = Math.max(0, media.currentTime - step);
+    });
+    navigator.mediaSession.setActionHandler('seekforward', function (evt) {
+      var step = (evt && evt.seekOffset) ? evt.seekOffset : 10;
+      media.currentTime = Math.min(media.duration || Infinity, media.currentTime + step);
+    });
+  }());
+  </script>
 {% endblock %}
