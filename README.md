@@ -100,6 +100,6 @@ rsync -av --exclude='.venv' --exclude='data' \
     /path/to/youtube-server/media-ingest/ \
     <your-username>@<server-ip>:/opt/media-ingest
 
-## Restart - I think
+## Restart
 sudo fuser -k 8080/tcp; sudo systemctl restart media-ingest;  
   sleep 2; systemctl status media-ingest --no-pager -n 5
