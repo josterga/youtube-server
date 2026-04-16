@@ -43,7 +43,7 @@ def process_job(job_row: dict) -> None:
             return
 
         duration = info.get("duration")
-        if duration is not None and float(duration) > config.MAX_DURATION_SEC:
+        if config.MAX_DURATION_SEC > 0 and duration is not None and float(duration) > config.MAX_DURATION_SEC:
             db.fail_job(
                 job_id,
                 "failed_duration_exceeded",

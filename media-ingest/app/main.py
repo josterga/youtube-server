@@ -13,7 +13,7 @@ from starlette.concurrency import run_in_threadpool
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
-from app import config, db, models
+from app import config, db, models, searcher
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -94,6 +94,11 @@ async def health() -> JSONResponse:
 
 
 @app.get("/", response_class=HTMLResponse)
+async def root(request: Request) -> Any:
+    return RedirectResponse("/search", status_code=302)
+
+
+@app.get("/submit", response_class=HTMLResponse)
 async def index(request: Request, error: Optional[str] = None) -> Any:
     recent = await run_in_threadpool(db.list_jobs_recent, 5)
     poll = await run_in_threadpool(db.any_active_jobs)
@@ -116,13 +121,13 @@ async def submit(
     mt = models.normalize_media_type(media_type)
     if not mt:
         q = urllib.parse.urlencode({"error": "bad_type"})
-        return RedirectResponse(f"/?{q}", status_code=303)
+        return RedirectResponse(f"/submit?{q}", status_code=303)
     u = (url or "").strip()
     if not models.looks_like_youtube_video_url(u):
-        return RedirectResponse("/?error=invalid_youtube", status_code=303)
+        return RedirectResponse("/submit?error=invalid_youtube", status_code=303)
     vid = models.extract_video_id(u)
     if vid and await run_in_threadpool(db.media_item_exists, vid):
-        return RedirectResponse("/?error=duplicate", status_code=303)
+        return RedirectResponse("/submit?error=duplicate", status_code=303)
     await run_in_threadpool(db.create_job, u, mt)
     return RedirectResponse("/jobs", status_code=303)
 
@@ -248,6 +253,30 @@ async def item_delete(source_id: str) -> RedirectResponse:
     await run_in_threadpool(_unlink)
     await run_in_threadpool(db.delete_media_item, source_id)
     return RedirectResponse("/library", status_code=303)
+
+
+@app.get("/search", response_class=HTMLResponse)
+async def search_page(
+    request: Request,
+    q: Optional[str] = None,
+    order: Optional[str] = None,
+) -> Any:
+    results = []
+    search_error: Optional[str] = None
+    order = order if order in ("relevance", "date") else "relevance"
+    if q and q.strip():
+        if not config.YOUTUBE_API_KEY:
+            search_error = "YouTube API key not configured. Set YOUTUBE_API_KEY in your environment."
+        else:
+            try:
+                results = await searcher.search_videos(q.strip(), order=order)
+            except searcher.SearchError as exc:
+                search_error = str(exc)
+    return templates.TemplateResponse(
+        request,
+        "search.html",
+        {"q": q or "", "results": results, "search_error": search_error, "order": order},
+    )
 
 
 # Byte-range–capable static files so <video>/<audio> work on :8080 without Caddy.

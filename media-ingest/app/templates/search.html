@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Search — Media Ingest{% endblock %}
+{% block body %}
+<div class="card stack" style="margin-bottom:1rem;">
+  <h2 style="margin:0;font-size:1.05rem;">Search YouTube</h2>
+  <form method="get" action="/search" class="stack">
+    <label for="q">Search query</label>
+    <input type="search" name="q" id="q" value="{{ q }}"
+           placeholder="Artist, song, title…" autocomplete="off">
+    <fieldset class="options">
+      <legend style="font-size:.85rem;color:var(--muted);margin-bottom:.25rem;">Sort</legend>
+      <label>
+        <input type="radio" name="order" value="relevance" {% if order != "date" %}checked{% endif %}>
+        Relevance
+      </label>
+      <label>
+        <input type="radio" name="order" value="date" {% if order == "date" %}checked{% endif %}>
+        Newest
+      </label>
+    </fieldset>
+    <button type="submit" class="btn">Search</button>
+  </form>
+</div>
+
+{% if search_error %}
+<div class="notice" role="alert">{{ search_error }}</div>
+{% endif %}
+
+{% if q and not results and not search_error %}
+<p style="color:var(--muted);">No results for "{{ q }}".</p>
+{% endif %}
+
+{% if results %}
+<div class="stack">
+  {% for r in results %}
+  <div class="card" style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;">
+    <a href="{{ r.youtube_url }}" target="_blank" rel="noopener"
+       style="flex-shrink:0;">
+      <img src="{{ r.thumbnail_url }}" alt="" width="160" height="90"
+           style="width:160px;height:90px;object-fit:cover;border-radius:8px;display:block;"
+           loading="lazy">
+    </a>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:.4rem;">
+      <strong style="font-size:.95rem;line-height:1.3;">
+        <a href="{{ r.youtube_url }}" target="_blank" rel="noopener">{{ r.title }}</a>
+      </strong>
+      <div style="font-size:.85rem;color:var(--muted);">
+        {{ r.channel }} · {{ r.duration_str }}
+      </div>
+      <div class="row-actions" style="margin-top:.35rem;">
+        <form method="post" action="/submit" style="margin:0;">
+          <input type="hidden" name="url" value="{{ r.youtube_url }}">
+          <input type="hidden" name="media_type" value="audio">
+          <button type="submit" class="btn secondary"
+                  style="min-height:40px;padding:.45rem .85rem;font-size:.85rem;">
+            Download MP3
+          </button>
+        </form>
+        <form method="post" action="/submit" style="margin:0;">
+          <input type="hidden" name="url" value="{{ r.youtube_url }}">
+          <input type="hidden" name="media_type" value="video">
+          <button type="submit" class="btn"
+                  style="min-height:40px;padding:.45rem .85rem;font-size:.85rem;">
+            Download MP4
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

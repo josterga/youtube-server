@@ -20,6 +20,13 @@ WORKER_PID=$!
 caddy run --config Caddyfile &
 CADDY_PID=$!
 
-trap "kill $WORKER_PID $CADDY_PID 2>/dev/null" EXIT
+uvicorn app.main:app --host "${APP_HOST:-127.0.0.1}" --port "${APP_PORT:-8080}" &
+UVICORN_PID=$!
 
-uvicorn app.main:app --host "${APP_HOST:-127.0.0.1}" --port "${APP_PORT:-8080}"
+cleanup() {
+    kill $WORKER_PID $CADDY_PID $UVICORN_PID 2>/dev/null
+    wait $WORKER_PID $CADDY_PID $UVICORN_PID 2>/dev/null
+}
+trap cleanup EXIT SIGTERM SIGINT
+
+wait $UVICORN_PID

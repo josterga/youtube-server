@@ -11,6 +11,8 @@ WorkingDirectory=/opt/media-ingest
 ExecStart=/opt/media-ingest/run.sh
 Restart=always
 RestartSec=5
+KillMode=control-group
+KillSignal=SIGTERM
 
 [Install]
 WantedBy=multi-user.target
